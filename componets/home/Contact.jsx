@@ -15,9 +15,10 @@ export default function Contact() {
   });
   const [status, setStatus] = useState({
     message: "",
-    type: "", // 'success' or 'error'
+    type: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -33,7 +34,6 @@ export default function Contact() {
     setStatus({ message: "", type: "" });
 
     try {
-      // Get current date at time of submission
       const submissionDate = new Date().toISOString().split("T")[0];
 
       await base(process.env.NEXT_PUBLIC_AIRTABLE_TABLE_NAME).create([
@@ -60,6 +60,8 @@ export default function Contact() {
         message: "Thank you for your message! We will get back to you soon.",
         type: "success",
       });
+
+      setShowPopup(true); // Show the success popup
     } catch (error) {
       console.error("Error submitting to Airtable:", error);
       setStatus({
@@ -72,20 +74,26 @@ export default function Contact() {
     }
   };
 
+  const closePopup = () => {
+    setShowPopup(false);
+  };
+
   return (
     <section id="contact" className="py-20 bg-white">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2 className="text-3xl font-bold text-center mb-12">Contact Me</h2>
 
-        {status.message && (
-          <div
-            className={`mb-6 p-4 rounded-lg ${
-              status.type === "success"
-                ? "bg-green-50 text-green-800"
-                : "bg-red-50 text-red-800"
-            }`}
-          >
-            {status.message}
+        {showPopup && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+              <p className="text-center text-green-800 mb-4">{status.message}</p>
+              <button
+                onClick={closePopup}
+                className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-all"
+              >
+                Close
+              </button>
+            </div>
           </div>
         )}
 
@@ -106,7 +114,7 @@ export default function Contact() {
               value={formData.name}
               onChange={handleChange}
               required
-              className="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="w-full rounded-lg"
               placeholder="Your name"
             />
           </div>
@@ -124,7 +132,7 @@ export default function Contact() {
               value={formData.phone}
               onChange={handleChange}
               required
-              className="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="w-full rounded-lg"
               placeholder="Your phone number"
             />
           </div>
@@ -141,7 +149,7 @@ export default function Contact() {
               id="email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="w-full rounded-lg"
               placeholder="Your email (Optional)"
             />
           </div>
@@ -159,7 +167,7 @@ export default function Contact() {
               value={formData.description}
               onChange={handleChange}
               required
-              className="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="w-full rounded-lg"
               placeholder="Tell us about your requirements"
             ></textarea>
           </div>
@@ -168,11 +176,7 @@ export default function Contact() {
             type="submit"
             disabled={isSubmitting}
             className={`w-full bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold 
-              ${
-                isSubmitting
-                  ? "opacity-50 cursor-not-allowed"
-                  : "hover:bg-blue-700"
-              } 
+              ${isSubmitting ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-700"} 
               transition-all shadow-lg`}
           >
             {isSubmitting ? "Sending..." : "Send Message"}
