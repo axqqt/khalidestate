@@ -3,7 +3,7 @@ import Airtable from "airtable";
 
 // Initialize Airtable
 const base = new Airtable({
-  apiKey: process.env.NEXT_PUBLIC_AIRTABLE_API_KEY,
+  apiKey: process.env.NEXT_PUBLIC_AIRTABLE_API_KEY, // Should be valid here
 }).base(process.env.NEXT_PUBLIC_AIRTABLE_BASE_ID);
 
 export default function Contact() {
@@ -15,10 +15,9 @@ export default function Contact() {
   });
   const [status, setStatus] = useState({
     message: "",
-    type: "",
+    type: "", // 'success' or 'error'
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showPopup, setShowPopup] = useState(false);
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -48,7 +47,7 @@ export default function Contact() {
         },
       ]);
 
-      // Clear form
+      // Clear form after success
       setFormData({
         name: "",
         phone: "",
@@ -60,13 +59,10 @@ export default function Contact() {
         message: "Thank you for your message! We will get back to you soon.",
         type: "success",
       });
-
-      setShowPopup(true); // Show the success popup
     } catch (error) {
       console.error("Error submitting to Airtable:", error);
       setStatus({
-        message:
-          "There was an error submitting your message. Please try again.",
+        message: "There was an error submitting your message. Please try again.",
         type: "error",
       });
     } finally {
@@ -74,26 +70,20 @@ export default function Contact() {
     }
   };
 
-  const closePopup = () => {
-    setShowPopup(false);
-  };
-
   return (
     <section id="contact" className="py-20 bg-white">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2 className="text-3xl font-bold text-center mb-12">Contact Me</h2>
 
-        {showPopup && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-              <p className="text-center text-green-800 mb-4">{status.message}</p>
-              <button
-                onClick={closePopup}
-                className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-all"
-              >
-                Close
-              </button>
-            </div>
+        {status.message && (
+          <div
+            className={`mb-6 p-4 rounded-lg ${
+              status.type === "success"
+                ? "bg-green-50 text-green-800"
+                : "bg-red-50 text-red-800"
+            }`}
+          >
+            {status.message}
           </div>
         )}
 
@@ -176,7 +166,11 @@ export default function Contact() {
             type="submit"
             disabled={isSubmitting}
             className={`w-full bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold 
-              ${isSubmitting ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-700"} 
+              ${
+                isSubmitting
+                  ? "opacity-50 cursor-not-allowed"
+                  : "hover:bg-blue-700"
+              } 
               transition-all shadow-lg`}
           >
             {isSubmitting ? "Sending..." : "Send Message"}
